@@ -1,21 +1,32 @@
 package com.durmimumacares.website.user;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
+    @Value("${env.LOGO}")
+    private String logo;
+    @Value("${env.GMAIL_USER}")
+    private String sender;
+    @Value("${env.SITE_URL}")
+    private String siteUrl;
     @Autowired
     private UserService userService;
 //    @Value("${env.GMAIL_USER}") private String sender;
@@ -47,28 +58,58 @@ public class UserController {
         JSONObject obj = new JSONObject(payload);
         User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("email"));
 
+
         userService.newUser(user);
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
         String content = "Dear <b>[[name]]</b>,<br>"
-                + "please click on the link below to activate your account:<br>"
-                + "<a href=\"https://www.pornhub.com\">CONFIRM REGISTRATION</a><br><br>"
+                + "please click on the button below to activate your account:<br><br>"
+                + "<a style=\"background:blue;color:white;padding:10px;border-radius:5px;text-decoration:none;font-weight:bold;\" href=\"[[siteurl]]\">CONFIRM REGISTRATION</a><br><br>"
                 + "Thank you,<br>"
-                + "<b>Durmimu Macares Team</b><br>"
+                + "<b><i>Durmimu Macares Team</i></b><br>"
                 + "<img src=[[logo]] height=\"100\"/>";
         content = content.replace("[[name]]",user.getName());
-        content = content.replace("[[logo]]", "https://i.ibb.co/YbFk7cX/logo-black.png");
+        content = content.replace("[[siteurl]]",siteUrl + "/api/v1/users/confirm-registration?code=" + user.getVerificationCode() + "&userid=" + user.getId());
+        content = content.replace("[[logo]]", logo);
         try {
+            helper.setFrom(new InternetAddress(sender, "Durmimu Macares Team"));
             helper.setTo(obj.getString("email"));
             helper.setText(content, true);
             helper.setSubject("Confirm Account Registration");
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         mailSender.send(mimeMessage);
 
-        return new ResponseEntity<String>("User registered", HttpStatus.CREATED);
+        return new ResponseEntity<String>("User registered with data: " + user.toString(), HttpStatus.CREATED);
     }
+
+    @GetMapping("/confirm-registration")
+    public ResponseEntity<String> confirmRegistration(@RequestParam int code, @RequestParam String userid) {
+        try {
+            Optional<User> optUser = userService.userById(new ObjectId(userid));
+            if(userService.updateStatus(new ObjectId(userid), code))
+                return new ResponseEntity<String>("Update successful for user: " + optUser.get(), HttpStatus.OK);
+        } catch(Exception e) {
+            return new ResponseEntity<String>("Update failed cause user not found --- \n" + e, HttpStatus.NOT_FOUND);
+        }
+
+//        if(optUser.isPresent()) {
+//
+//            else return new ResponseEntity<String>("Update failed cause mismatching verification code", HttpStatus.NOT_FOUND);
+//        }
+         return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
+    }
+
+
+    // old version (doesn't catch exceptions)
+//    Optional<User> optUser = userService.userById(new ObjectId(userid));
+//    if(optUser.isPresent()) {
+//        if(userService.updateStatus(new ObjectId(userid), code))
+//            return new ResponseEntity<String>("Update successful for user: " + optUser.get(), HttpStatus.OK);
+//        else return new ResponseEntity<String>("Update failed cause mismatching verification code", HttpStatus.NOT_FOUND);
+//    } else return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
 
 }

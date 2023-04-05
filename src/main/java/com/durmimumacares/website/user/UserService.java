@@ -1,6 +1,10 @@
 package com.durmimumacares.website.user;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,5 +27,18 @@ public class UserService {
 
     public Optional<List<User>> userByEmail(String email) { return userRepository.findUserByEmail(email); }
 
+    public Optional<User> userById(ObjectId id) { return userRepository.findById(id.toString()); }
     public User newUser(User user) { return userRepository.insert(user); }
+
+
+    public boolean updateStatus(ObjectId userid, int code) {
+        User user = userRepository.findUserById(userid);
+        if(user.getVerificationCode() == code) {
+            user.setActive(true);
+            userRepository.save(user);
+            return true;
+        }
+        else return false;
+    }
+
 }
