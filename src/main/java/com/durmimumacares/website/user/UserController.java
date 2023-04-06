@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.http.HttpResponse;
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +59,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody String payload) {
         JSONObject obj = new JSONObject(payload);
-        User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("email"));
+        User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("date"), obj.getString("username"), obj.getString("email"));
 
 
         userService.newUser(user);
@@ -83,7 +86,7 @@ public class UserController {
 
         mailSender.send(mimeMessage);
 
-        return new ResponseEntity<String>("User registered with data: " + user.toString(), HttpStatus.CREATED);
+        return new ResponseEntity<String>("User registered!", HttpStatus.CREATED);
     }
 
     @GetMapping("/confirm-registration")
