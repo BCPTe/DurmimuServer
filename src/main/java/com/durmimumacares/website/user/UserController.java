@@ -1,6 +1,5 @@
 package com.durmimumacares.website.user;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.bson.types.ObjectId;
@@ -11,16 +10,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
-import java.net.http.HttpResponse;
-import java.text.DateFormat;
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+
+@CrossOrigin("http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -52,14 +49,47 @@ public class UserController {
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<Optional<List<User>>> getUserByEmail(@PathVariable String email) {
-        return new ResponseEntity<Optional<List<User>>>(userService.userByEmail(email), HttpStatus.OK);
+    public ResponseEntity<Optional<User>> getUserByEmail(@PathVariable String email) {
+        return new ResponseEntity<Optional<User>>(userService.userByEmail(email), HttpStatus.OK);
+    }
+
+    @GetMapping("/username/{username}")
+    public ResponseEntity<Optional<User>> getUserByUsername(@PathVariable String username) {
+        return new ResponseEntity<Optional<User>>(userService.userByUsername(username), HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity loginUser(@RequestBody String payload) {
+        JSONObject obj = new JSONObject(payload);
+        String receivedUsernameOrEmail = obj.getString("usernameOrEmail");
+        String receivedPasswordEncoded = obj.getString("password");
+
+        if(getUserByEmail(receivedUsernameOrEmail).getBody().isPresent()) {
+            User user = getUserByEmail(receivedUsernameOrEmail).getBody().get();
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            String DBPasswordEncoded = encoder.encode(user.getPassword());
+            if(receivedPasswordEncoded != DBPasswordEncoded) {
+                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            }
+            else return new ResponseEntity(HttpStatus.OK);
+        }
+        else if(getUserByUsername(receivedUsernameOrEmail).getBody().isPresent()) {
+            User user = getUserByUsername(receivedUsernameOrEmail).getBody().get();
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            String DBPasswordEncoded = encoder.encode(user.getPassword());
+            if(receivedPasswordEncoded != DBPasswordEncoded) {
+                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            }
+            else return new ResponseEntity(HttpStatus.OK);
+
+        }
+        else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody String payload) {
         JSONObject obj = new JSONObject(payload);
-        User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("date"), obj.getString("username"), obj.getString("email"));
+        User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("date"), obj.getString("username"), obj.getString("email"), obj.getString("password"));
 
 
         userService.newUser(user);
@@ -99,11 +129,7 @@ public class UserController {
             return new ResponseEntity<String>("Update failed cause user not found --- \n" + e, HttpStatus.NOT_FOUND);
         }
 
-//        if(optUser.isPresent()) {
-//
-//            else return new ResponseEntity<String>("Update failed cause mismatching verification code", HttpStatus.NOT_FOUND);
-//        }
-         return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
     }
 
 
