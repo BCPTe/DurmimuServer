@@ -132,19 +132,10 @@ public class UserController {
             if(userService.updateStatus(new ObjectId(userid), code))
                 return new ResponseEntity<String>("Update successful for user: " + optUser.get(), HttpStatus.OK);
         } catch(Exception e) {
-            return new ResponseEntity<String>("Update failed cause user not found --- \n" + e, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>("Update failed cause user not found --- \n" + e, HttpStatus.NO_CONTENT);
         }
 
-        return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NO_CONTENT);
     }
-
-
-    // old version (doesn't catch exceptions)
-//    Optional<User> optUser = userService.userById(new ObjectId(userid));
-//    if(optUser.isPresent()) {
-//        if(userService.updateStatus(new ObjectId(userid), code))
-//            return new ResponseEntity<String>("Update successful for user: " + optUser.get(), HttpStatus.OK);
-//        else return new ResponseEntity<String>("Update failed cause mismatching verification code", HttpStatus.NOT_FOUND);
-//    } else return new ResponseEntity<String>("Update failed cause user not found", HttpStatus.NOT_FOUND);
 
 }
