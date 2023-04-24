@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -66,21 +66,27 @@ public class UserController {
 
         if(getUserByEmail(receivedUsernameOrEmail).getBody().isPresent()) {
             User user = getUserByEmail(receivedUsernameOrEmail).getBody().get();
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            String DBPasswordEncoded = encoder.encode(user.getPassword());
-            if(receivedPasswordEncoded != DBPasswordEncoded) {
-                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//            String DBPasswordEncoded = encoder.encode(user.getPassword());
+//            if(receivedPasswordEncoded != DBPasswordEncoded) {
+//                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+//            }
+            if(user.getPassword().equals(receivedPasswordEncoded)) {
+                return new ResponseEntity(user, HttpStatus.OK);
             }
-            else return new ResponseEntity(HttpStatus.OK);
+            else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         else if(getUserByUsername(receivedUsernameOrEmail).getBody().isPresent()) {
             User user = getUserByUsername(receivedUsernameOrEmail).getBody().get();
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            String DBPasswordEncoded = encoder.encode(user.getPassword());
-            if(receivedPasswordEncoded != DBPasswordEncoded) {
-                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//            String DBPasswordEncoded = encoder.encode(user.getPassword());
+//            if(receivedPasswordEncoded != DBPasswordEncoded) {
+//                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+//            }
+            if(user.getPassword().equals(receivedPasswordEncoded)) {
+                return new ResponseEntity(user, HttpStatus.OK);
             }
-            else return new ResponseEntity(HttpStatus.OK);
+            else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 
         }
         else return new ResponseEntity(HttpStatus.UNAUTHORIZED);

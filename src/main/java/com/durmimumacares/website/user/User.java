@@ -24,6 +24,7 @@ public class User {
     private String password;
     private int verificationCode;
     private boolean active;
+    private boolean admin;
 
     public User(String name, String surname, String birthdate, String username, String email, String password) {
         this.name = name;
@@ -36,6 +37,7 @@ public class User {
         // generate a random number between 100000 and 999999 (of 6 digits) for registration validation
         this.verificationCode = (int) (Math.random() * (999999 - 100000) + 100000);
         this.active = false;
+        this.admin = false;
     }
 
     public String getId() {
