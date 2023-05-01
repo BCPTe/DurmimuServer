@@ -3,6 +3,7 @@ package com.durmimumacares.website.user;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,7 +16,7 @@ import java.util.Random;
 @NoArgsConstructor
 public class User {
     @Id
-    private String id;
+    private ObjectId id;
     private String name;
     private String surname;
     private String birthdate;
@@ -40,7 +41,7 @@ public class User {
         this.admin = false;
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 

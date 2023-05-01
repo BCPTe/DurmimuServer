@@ -1,4 +1,4 @@
-package com.durmimumacares.website.match;
+package com.durmimumacares.website.survey;
 
 import com.durmimumacares.website.user.User;
 import lombok.AllArgsConstructor;
@@ -8,20 +8,21 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
-@Document(collection = "matches")
+
+@Document(collection = "surveys")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Match {
+public class Survey {
     @Id
     private ObjectId id;
-    private String datetime;
+    private Long date;
+    private List<String> players;
 
-    private List<Object> players;
-
-    public Match(String datetime, List<Object> players) {
-        this.datetime = datetime;
+    public Survey(Long date, List<String> players) {
+        this.date = date;
         this.players = players;
     }
 }

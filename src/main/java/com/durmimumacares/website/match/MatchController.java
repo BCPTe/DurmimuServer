@@ -1,5 +1,6 @@
 package com.durmimumacares.website.match;
 
+import com.durmimumacares.website.user.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,6 @@ public class MatchController {
     public ResponseEntity<Match> createMatch(@RequestBody String payload) {
         JSONObject obj = new JSONObject(payload);
         Match match = new Match(obj.getString("datetime"), obj.getJSONArray("players").toList());
-
-        System.out.println(match);
 
         return new ResponseEntity<Match>(matchService.insertMatch(match), HttpStatus.CREATED);
     }
