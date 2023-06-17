@@ -7,8 +7,6 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
-import java.util.Random;
 
 @Document(collection = "users")
 @Data
@@ -17,6 +15,7 @@ import java.util.Random;
 public class User {
     @Id
     private ObjectId id;
+    private String token;
     private String name;
     private String surname;
     private String birthdate;
@@ -36,13 +35,17 @@ public class User {
         this.password = password;
 
         // generate a random number between 100000 and 999999 (of 6 digits) for registration validation
-        this.verificationCode = (int) (Math.random() * (999999 - 100000) + 100000);
+        this.verificationCode = ((int) (Math.random() * (999999 - 100000))) + 100000;
         this.active = false;
         this.admin = false;
     }
 
     public ObjectId getId() {
         return id;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public String getName() {

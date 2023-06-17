@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface MatchRepository extends MongoRepository<Match, ObjectId> {
-    Optional<List<Match>> findMatchByDatetime(String datetime);
+    Optional<List<Match>> findMatchByDatetime(Long datetime);
 
 }

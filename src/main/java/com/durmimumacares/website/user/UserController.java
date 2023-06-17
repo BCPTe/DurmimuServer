@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,23 +37,23 @@ public class UserController {
         return new ResponseEntity<List<User>>(userService.allUsers(), HttpStatus.OK);
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<Optional<List<User>>> getUserByName(@PathVariable String name) {
+    @GetMapping(params = "name")
+    public ResponseEntity<Optional<List<User>>> getUserByName(@RequestParam("name") String name) {
         return new ResponseEntity<Optional<List<User>>>(userService.userByName(name), HttpStatus.OK);
     }
 
-    @GetMapping("/surname/{surname}")
-    public ResponseEntity<Optional<List<User>>> getUserBySurname(@PathVariable String surname) {
+    @GetMapping(params = "surname")
+    public ResponseEntity<Optional<List<User>>> getUserBySurname(@RequestParam("surname") String surname) {
         return new ResponseEntity<Optional<List<User>>>(userService.userBySurname(surname), HttpStatus.OK);
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<Optional<User>> getUserByEmail(@PathVariable String email) {
+    @GetMapping(params = "email")
+    public ResponseEntity<Optional<User>> getUserByEmail(@RequestParam("email") String email) {
         return new ResponseEntity<Optional<User>>(userService.userByEmail(email), HttpStatus.OK);
     }
 
-    @GetMapping("/username/{username}")
-    public ResponseEntity<Optional<User>> getUserByUsername(@PathVariable String username) {
+    @GetMapping(params = "username")
+    public ResponseEntity<Optional<User>> getUserByUsername(@RequestParam("username") String username) {
         return new ResponseEntity<Optional<User>>(userService.userByUsername(username), HttpStatus.OK);
     }
 
@@ -66,30 +65,20 @@ public class UserController {
 
         if(getUserByEmail(receivedUsernameOrEmail).getBody().isPresent()) {
             User user = getUserByEmail(receivedUsernameOrEmail).getBody().get();
-//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-//            String DBPasswordEncoded = encoder.encode(user.getPassword());
-//            if(receivedPasswordEncoded != DBPasswordEncoded) {
-//                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-//            }
+
             if(user.getPassword().equals(receivedPasswordEncoded)) {
                 return new ResponseEntity(user, HttpStatus.OK);
             }
-            else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         else if(getUserByUsername(receivedUsernameOrEmail).getBody().isPresent()) {
             User user = getUserByUsername(receivedUsernameOrEmail).getBody().get();
-//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-//            String DBPasswordEncoded = encoder.encode(user.getPassword());
-//            if(receivedPasswordEncoded != DBPasswordEncoded) {
-//                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-//            }
+
             if(user.getPassword().equals(receivedPasswordEncoded)) {
                 return new ResponseEntity(user, HttpStatus.OK);
             }
-            else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-
         }
-        else return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+
+        return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/register")
@@ -102,12 +91,14 @@ public class UserController {
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        String content = "Dear <b>[[name]]</b>,<br>"
-                + "please click on the button below to activate your account:<br><br>"
-                + "<a style=\"background:blue;color:white;padding:10px;border-radius:5px;text-decoration:none;font-weight:bold;\" href=\"[[siteurl]]\">CONFIRM REGISTRATION</a><br><br>"
-                + "Thank you,<br>"
-                + "<b><i>Durmimu Macares Team</i></b><br>"
-                + "<img src=[[logo]] height=\"100\"/>";
+        String content = """
+                Dear <b>[[name]]</b>,<br>
+                please click on the button below to activate your account:<br><br>
+                <a style=\"background:blue;color:white;padding:10px;border-radius:5px;text-decoration:none;font-weight:bold;\" href=\"[[siteurl]]\">CONFIRM REGISTRATION</a><br><br>
+                Thank you,<br>
+                <b><i>Durmimu Macares Team</i></b><br>
+                <img src=[[logo]] height=\"100\"/>
+                """;
         content = content.replace("[[name]]",user.getName());
         content = content.replace("[[siteurl]]",siteUrl + "/api/v1/users/confirm-registration?code=" + user.getVerificationCode() + "&userid=" + user.getId());
         content = content.replace("[[logo]]", logo);

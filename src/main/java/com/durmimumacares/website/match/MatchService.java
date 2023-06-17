@@ -15,7 +15,7 @@ public class MatchService {
         return matchRepository.findAll();
     }
 
-    public Optional<List<Match>> matchByDatetime(String datetime) {
+    public Optional<List<Match>> matchByDatetime(Long datetime) {
         return matchRepository.findMatchByDatetime(datetime);
     }
 

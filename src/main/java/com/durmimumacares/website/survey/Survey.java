@@ -19,9 +19,9 @@ public class Survey {
     @Id
     private ObjectId id;
     private Long date;
-    private List<String> players;
+    private List<User> players;
 
-    public Survey(Long date, List<String> players) {
+    public Survey(Long date, List<User> players) {
         this.date = date;
         this.players = players;
     }

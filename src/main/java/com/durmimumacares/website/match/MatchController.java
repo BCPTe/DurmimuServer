@@ -22,8 +22,8 @@ public class MatchController {
         return new ResponseEntity<List<Match>>(matchService.allMatches(), HttpStatus.OK);
     }
 
-    @GetMapping("/{datetime}")
-    public ResponseEntity<Optional<List<Match>>> getMatchesByDatetime(@PathVariable String datetime) {
+    @GetMapping(params = "datetime")
+    public ResponseEntity<Optional<List<Match>>> getMatchesByDatetime(@RequestParam("datetime") Long datetime) {
         return new ResponseEntity<Optional<List<Match>>>(matchService.matchByDatetime(datetime), HttpStatus.OK);
     }
 
