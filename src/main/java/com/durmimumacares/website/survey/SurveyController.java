@@ -15,6 +15,11 @@ public class SurveyController {
     @Autowired
     SurveyService surveyService;
 
+    @GetMapping
+    public ResponseEntity<List<Survey>> getAllSurveys() {
+        return new ResponseEntity<List<Survey>>(surveyService.allSurveys(), HttpStatus.OK);
+    }
+
     @GetMapping(params = "date")
     public ResponseEntity<Survey> getSurveyByDate(@RequestParam("date") Long date) {
         return new ResponseEntity<Survey>(surveyService.surveyByDate(date),HttpStatus.OK);
@@ -24,12 +29,6 @@ public class SurveyController {
     public ResponseEntity<List<Survey>> getSurveysByUsername(@RequestParam("user") String user) {
         return new ResponseEntity<List<Survey>>(surveyService.surveysByUsername(user),HttpStatus.OK);
     }
-
-//    @PostMapping("/user/{username}")
-//    public ResponseEntity<List<Survey>> getSurveysByUsername(@RequestBody String payload) {
-//        String username = new JSONObject(payload).getString("username");
-//        return new ResponseEntity<List<Survey>>(surveyService.surveysByUsername(username),HttpStatus.OK);
-//    }
 
     @PostMapping
     public ResponseEntity<Survey> manageSurvey(@RequestBody String payload) {

@@ -12,9 +12,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
 
 @CrossOrigin("*")
 @RestController
@@ -82,7 +85,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody String payload) {
+    public ResponseEntity<String> registerUser(@RequestBody String payload) throws IOException {
         JSONObject obj = new JSONObject(payload);
         User user = new User(obj.getString("name"), obj.getString("surname"), obj.getString("date"), obj.getString("username"), obj.getString("email"), obj.getString("password"));
 
@@ -91,21 +94,22 @@ public class UserController {
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        String content = """
-                Dear <b>[[name]]</b>,<br>
-                please click on the button below to activate your account:<br><br>
-                <a style=\"background:blue;color:white;padding:10px;border-radius:5px;text-decoration:none;font-weight:bold;\" href=\"[[siteurl]]\">CONFIRM REGISTRATION</a><br><br>
-                Thank you,<br>
-                <b><i>Durmimu Macares Team</i></b><br>
-                <img src=[[logo]] height=\"100\"/>
-                """;
-        content = content.replace("[[name]]",user.getName());
-        content = content.replace("[[siteurl]]",siteUrl + "/api/v1/users/confirm-registration?code=" + user.getVerificationCode() + "&userid=" + user.getId());
-        content = content.replace("[[logo]]", logo);
+
+        // read html email file
+        String emailHtml = "";
+        try {
+            System.out.println(System.getProperty("user.dir"));
+            byte[] bytes = Files.readAllBytes(Paths.get("../src/main/java/com/durmimumacares/website/email/durmimu-activation-email.html"));
+            emailHtml = new String(bytes);
+            emailHtml = emailHtml.replace("[[activationurl]]",siteUrl + "/api/v1/users/confirm-registration?code=" + user.getVerificationCode() + "&userid=" + user.getId());
+        } catch (IOException e) {
+            return new ResponseEntity<String>("Error sending activation email! Error:" + e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         try {
             helper.setFrom(new InternetAddress(sender, "Durmimu Macares Team"));
             helper.setTo(obj.getString("email"));
-            helper.setText(content, true);
+            helper.setText(emailHtml, true);
             helper.setSubject("Confirm Account Registration");
         } catch (Exception e) {
             throw new RuntimeException(e);

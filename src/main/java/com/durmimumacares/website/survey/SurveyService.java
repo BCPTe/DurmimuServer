@@ -26,6 +26,10 @@ public class SurveyService {
     @Autowired
     private UserRepository userRepository;
 
+    public List<Survey> allSurveys() {
+        return surveyRepository.findAll();
+    }
+
     public Survey surveyByDate(Long date) {
         return surveyRepository.findSurveyByDate(date);
     }
